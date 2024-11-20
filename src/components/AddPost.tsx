@@ -12,17 +12,26 @@ const AddPost: React.FC<AddPostProps> = ({ onPostAdded }) => {
   const [body, setBody] = useState('');
 
   const handleAddPost = () => {
-    if (!title || !body) return;
+    if (!title || !body) {
+      alert('Title and body are required!');
+      return;
+    }
+
+    if (!user || !user.id) {
+      alert('User is not logged in or lacks a valid id.');
+      return;
+    }
 
     const newPost = {
+      id: Date.now(),
       title,
       body,
       userId: user.id,
     };
 
     addPost(newPost)
-      .then((response) => {
-        onPostAdded(response.data);
+      .then(() => {
+        onPostAdded(newPost);
         setTitle('');
         setBody('');
       })

@@ -5,6 +5,7 @@ import AddPost from '../components/AddPost';
 
 const FeedPage = () => {
   const [posts, setPosts] = useState<any[]>([]);
+  const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   useEffect(() => {
     getPosts()
@@ -29,7 +30,12 @@ const FeedPage = () => {
       <h1>Feed</h1>
       <AddPost onPostAdded={handlePostAdded} />
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onDelete={handleDelete} />
+        <PostCard 
+          key={post.id} 
+          post={post} 
+          onDelete={handleDelete} 
+          currentUserId={currentUserId} 
+        />
       ))}
     </div>
   );

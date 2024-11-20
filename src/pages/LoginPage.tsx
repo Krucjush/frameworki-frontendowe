@@ -11,8 +11,8 @@ const LoginPage = () => {
 
   const handleLogin = () => {
     if (username && password) {
-      login({ username });
-      navigate('/feed');
+      login({ username, id: new Date().getTime() });
+      navigate('/');
     } else {
       alert('Please enter username and password');
     }
