@@ -1,40 +1,64 @@
 import { useEffect, useState } from 'react';
-import { getPosts, deletePost } from '../api/postsApi';
-import PostCard from '../components/PostCard';
-import AddPost from '../components/AddPost';
+import { getAlbums, getPhotos, deletePhoto } from '../api/albumsApi';
+import AlbumCard from '../components/AlbumCard';
+import AddPhoto from '../components/AddPhoto';
 
 const FeedPage = () => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [albums, setAlbums] = useState<any[]>([]);
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   useEffect(() => {
-    getPosts()
-      .then((response) => setPosts(response.data))
-      .catch((error) => console.error('Error fetching posts:', error));
+    Promise.all([getAlbums(), getPhotos()])
+      .then(([albumsResponse, photosResponse]) => {
+        const albumsData = albumsResponse || [];
+        const photosData = photosResponse || [];
+  
+        const albumsWithPhotos = albumsData.map((album: any) => ({
+          ...album,
+          photos: photosData.filter((photo: any) => photo.albumId === album.id),
+        }));
+  
+        console.log(albumsWithPhotos);  // Check the data here
+  
+        setAlbums(albumsWithPhotos);
+      })
+      .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  const handlePostAdded = (newPost: any) => {
-    setPosts((prev) => [newPost, ...prev]);
+  const handleAddPhoto = (newPhoto: any) => {
+    setAlbums((prevAlbums) =>
+      prevAlbums.map((album) =>
+        album.id === newPhoto.albumId
+          ? { ...album, photos: [...album.photos, newPhoto] }
+          : album
+      )
+    );
   };
 
-  const handleDelete = (id: number) => {
-    deletePost(id)
+  const handleDeletePhoto = (photoId: number) => {
+    deletePhoto(photoId)
       .then(() => {
-        setPosts((prev) => prev.filter((post) => post.id !== id));
+        setAlbums((prevAlbums) =>
+          prevAlbums.map((album) => ({
+            ...album,
+            photos: album.photos.filter((photo: any) => photo.id !== photoId),
+          }))
+        );
       })
-      .catch((error) => console.error('Error deleting post:', error));
+      .catch((error) => console.error('Error deleting photo:', error));
   };
 
   return (
     <div>
-      <h1>Feed</h1>
-      <AddPost onPostAdded={handlePostAdded} />
-      {posts.map((post) => (
-        <PostCard 
-          key={post.id} 
-          post={post} 
-          onDelete={handleDelete} 
-          currentUserId={currentUserId} 
+      <h1>Albums</h1>
+      <AddPhoto currentUserId={currentUserId} onPhotoAdded={handleAddPhoto} />
+      {albums.map((album) => (
+        <AlbumCard
+          key={album.id}
+          album={album}
+          onAddPhoto={handleAddPhoto}
+          onDeletePhoto={handleDeletePhoto}
+          currentUserId={currentUserId}
         />
       ))}
     </div>
