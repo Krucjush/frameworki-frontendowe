@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getAlbums, addPhoto } from '../api/albumsApi';
+import { getAlbums } from '../api/albumsApi';
 
 const AddPhoto = ({
   currentUserId,
-  albumId, // Optional prop for preselected album
+  albumId,
   onPhotoAdded,
 }: {
   currentUserId: number;
@@ -15,12 +15,11 @@ const AddPhoto = ({
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(albumId || null);
   const [albums, setAlbums] = useState<any[]>([]);
 
+  // Load albums if the albumId is not passed
   useEffect(() => {
     if (!albumId) {
-      // Fetch albums only if albumId is not preselected
       getAlbums()
         .then((data) => {
-          // Filter to only show albums belonging to the current user
           const userAlbums = data.filter((album: any) => album.userId === currentUserId);
           setAlbums(userAlbums);
         })
@@ -29,31 +28,35 @@ const AddPhoto = ({
   }, [albumId, currentUserId]);
 
   const handleAddPhoto = () => {
+    console.log("Add Photo button pressed");
+
+    // Check if the title, file, and albumId are provided
     if (!title || !file || selectedAlbumId === null) {
       alert('Title, file, and album selection are required!');
-      return;
+      return; // Exit the function early if any required field is missing
     }
 
-    // Simulate file upload (replace this with actual upload logic)
+    // Generate a temporary photo URL
     const photoUrl = URL.createObjectURL(file);
 
+    // Create the new photo object
     const newPhoto = {
-      id: Date.now(), // Unique ID
+      id: Date.now(),
       albumId: selectedAlbumId,
       title,
       url: photoUrl,
-      thumbnailUrl: photoUrl, // Use same URL for simplicity
+      thumbnailUrl: photoUrl,
       userId: currentUserId,
     };
 
-    addPhoto(newPhoto)
-      .then(() => {
-        onPhotoAdded(newPhoto);
-        setTitle('');
-        setFile(null);
-        setSelectedAlbumId(albumId || null); // Reset to albumId if provided
-      })
-      .catch((error) => console.error('Error adding photo:', error));
+    console.log("New photo details:", newPhoto);
+
+    // Pass the new photo to the parent component via the callback function
+    onPhotoAdded(newPhoto);
+
+    // Clear the form inputs after adding the photo
+    setTitle('');
+    setFile(null);
   };
 
   return (

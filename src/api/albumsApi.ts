@@ -2,18 +2,16 @@ import axios from 'axios';
 
 const API_URL = 'https://jsonplaceholder.typicode.com';
 
-// Fetch all albums
 export const getAlbums = async () => {
     try {
-        const response = await axios.get(`${API_URL}/albums`);
-        return response.data;
+      const response = await axios.get(`${API_URL}/albums`);
+      return response.data;
     } catch (error) {
-        console.error('Error fetching albums:', error);
-        throw error;
+      console.error('Error fetching albums:', error);
+      throw new Error('Failed to fetch albums'); 
     }
-};
+  };
 
-// Fetch all photos
 export const getPhotos = async () => {
     try {
         const response = await axios.get(`${API_URL}/photos`);
@@ -25,10 +23,8 @@ export const getPhotos = async () => {
 };
 
 
-// Add a photo
 export const addPhoto = async (photo: any) => {
     try {
-        // Replace this with actual POST logic when integrating a real backend
         const response = await axios.post(`${API_URL}/photos`, photo);
         return response.data;
     } catch (error) {
@@ -37,13 +33,22 @@ export const addPhoto = async (photo: any) => {
     }
 };
 
-// Delete a photo
 export const deletePhoto = async (id: number) => {
     try {
         const response = await axios.delete(`${API_URL}/photos/${id}`);
         return response.data;
     } catch (error) {
         console.error('Error deleting photo:', error);
+        throw error;
+    }
+};
+
+export const createAlbum = async (album: { userId: number; title: string }) => {
+    try {
+        const response = await axios.post(`${API_URL}/albums`, album);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating album:', error);
         throw error;
     }
 };
