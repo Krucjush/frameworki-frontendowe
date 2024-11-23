@@ -8,7 +8,6 @@ const AlbumCard = ({
   currentUserId,
   onToggleExpand,
   isExpanded,
-  loadPhotos,
 }: {
   album: any;
   onAddPhoto: (photo: any) => void;
@@ -16,24 +15,13 @@ const AlbumCard = ({
   currentUserId: number;
   onToggleExpand: () => void;
   isExpanded: boolean;
-  loadPhotos: () => void;
 }) => {
   const [photos, setPhotos] = useState<any[]>(album.photos || []);
 
-  // Effect to load photos when expanded
+  // Effect to load photos when expanded or when album.photos changes
   useEffect(() => {
-    if (isExpanded && album.photos?.length === 0) {
-      loadPhotos();  // Load photos only if there are no photos yet
-    } else {
-      // If photos exist in the album, set them directly
-      setPhotos(album.photos || []);
-    }
-  }, [isExpanded, loadPhotos, album.photos]);
-
-  // Handle adding a new photo
-  const handleAddPhoto = (newPhoto: any) => {
-    setPhotos((prevPhotos) => [...prevPhotos, newPhoto]);  // Update the photos array with the new photo
-  };
+    setPhotos(album.photos || []);
+  }, [album.photos]); // Add album.photos as a dependency
 
   return (
     <div style={{ border: '1px solid #ccc', marginBottom: '20px', padding: '10px' }}>
@@ -43,21 +31,25 @@ const AlbumCard = ({
       {isExpanded && (
         <div>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {photos.map((photo: any) => (
-              <div key={photo.id} style={{ margin: '10px' }}>
-                <img src={photo.thumbnailUrl} alt={photo.title} />
-                <p>{photo.title}</p>
-                {photo.userId === currentUserId && (
-                  <button onClick={() => onDeletePhoto(photo.id)}>Delete</button>
-                )}
-              </div>
-            ))}
+            {photos.length > 0 ? (
+              photos.map((photo: any) => (
+                <div key={photo.id} style={{ margin: '10px' }}>
+                  <img src={photo.thumbnailUrl} alt={photo.title} />
+                  <p>{photo.title}</p>
+                  {photo.userId === currentUserId && (
+                    <button onClick={() => onDeletePhoto(photo.id)}>Delete</button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>No photos available</p>
+            )}
           </div>
           {album.userId === currentUserId && (
             <AddPhoto
               albumId={album.id}
               currentUserId={currentUserId}
-              onPhotoAdded={handleAddPhoto}  // Pass the handler to the AddPhoto component
+              onPhotoAdded={onAddPhoto} // Ensure this function is passed down correctly
             />
           )}
         </div>

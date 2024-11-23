@@ -6,7 +6,7 @@ const AddPhoto = ({
   albumId,
   onPhotoAdded,
 }: {
-  currentUserId: number;
+  currentUserId: number | null;
   albumId?: number;
   onPhotoAdded: (photo: any) => void;
 }) => {
@@ -15,9 +15,8 @@ const AddPhoto = ({
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(albumId || null);
   const [albums, setAlbums] = useState<any[]>([]);
 
-  // Load albums if the albumId is not passed
   useEffect(() => {
-    if (!albumId) {
+    if (!albumId && currentUserId) {
       getAlbums()
         .then((data) => {
           const userAlbums = data.filter((album: any) => album.userId === currentUserId);
@@ -28,18 +27,18 @@ const AddPhoto = ({
   }, [albumId, currentUserId]);
 
   const handleAddPhoto = () => {
-    console.log("Add Photo button pressed");
-
-    // Check if the title, file, and albumId are provided
-    if (!title || !file || selectedAlbumId === null) {
-      alert('Title, file, and album selection are required!');
-      return; // Exit the function early if any required field is missing
+    if (!currentUserId) {
+      alert('Please log in to add photos.');
+      return;
     }
 
-    // Generate a temporary photo URL
+    if (!title || !file || selectedAlbumId === null) {
+      alert('Title, file, and album selection are required!');
+      return;
+    }
+
     const photoUrl = URL.createObjectURL(file);
 
-    // Create the new photo object
     const newPhoto = {
       id: Date.now(),
       albumId: selectedAlbumId,
@@ -49,12 +48,7 @@ const AddPhoto = ({
       userId: currentUserId,
     };
 
-    console.log("New photo details:", newPhoto);
-
-    // Pass the new photo to the parent component via the callback function
     onPhotoAdded(newPhoto);
-
-    // Clear the form inputs after adding the photo
     setTitle('');
     setFile(null);
   };
@@ -62,31 +56,38 @@ const AddPhoto = ({
   return (
     <div style={{ marginBottom: '20px' }}>
       <h2>Add Photo</h2>
-      {!albumId && (
-        <select
-          onChange={(e) => setSelectedAlbumId(Number(e.target.value))}
-          value={selectedAlbumId || ''}
-        >
-          <option value="" disabled>
-            Select Album
-          </option>
-          {albums.map((album) => (
-            <option key={album.id} value={album.id}>
-              {album.title} (Created by User {album.userId})
-            </option>
-          ))}
-        </select>
+      {currentUserId ? (
+        <>
+          {!albumId && (
+            <select
+              onChange={(e) => setSelectedAlbumId(Number(e.target.value))}
+              value={selectedAlbumId || ''}
+            >
+              <option value="" disabled>
+                Select Album
+              </option>
+              {albums.map((album) => (
+                <option key={album.id} value={album.id}>
+                  {album.title} (Created by User {album.userId})
+                </option>
+              ))}
+            </select>
+          )}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter photo title"
+          />
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          <button onClick={handleAddPhoto}>Add Photo</button>
+        </>
+      ) : (
+        <p style={{ color: 'red' }}>Please log in to add photos.</p>
       )}
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-      <button onClick={handleAddPhoto}>Add Photo</button>
     </div>
   );
 };
+
 
 export default AddPhoto;

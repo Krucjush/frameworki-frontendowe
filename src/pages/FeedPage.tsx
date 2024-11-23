@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getAlbums, getPhotos, createAlbum } from '../api/albumsApi';
+import { getAlbums, createAlbum } from '../api/albumsApi';
 import AlbumCard from '../components/AlbumCard';
-import { addPhoto } from '../api/albumsApi';
 
 interface Photo {
   id: number;
@@ -16,7 +15,7 @@ interface Album {
   id: number;
   title: string;
   userId: number;
-  photos?: Photo[];
+  photos?: Photo[]; // Photos are part of the album
 }
 
 const FeedPage = () => {
@@ -25,55 +24,95 @@ const FeedPage = () => {
   const [expandedAlbumIds, setExpandedAlbumIds] = useState<Set<number>>(new Set());
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
+  // Helper functions for LocalStorage
+  const getAlbumsFromLocalStorage = (): Album[] => {
+    return JSON.parse(localStorage.getItem('albums') || '[]');
+  };
+
+  const saveAlbumsToLocalStorage = (albums: Album[]) => {
+    localStorage.setItem('albums', JSON.stringify(albums));
+  };
+
+  // Fetch albums initially and sync with localStorage
   useEffect(() => {
-    // Fetch albums initially
-    getAlbums()
-      .then((albumsResponse) => {
-        setAlbums(albumsResponse || []);
-      })
-      .catch((error) => console.error('Error fetching albums:', error));
+    const savedAlbums = getAlbumsFromLocalStorage();
+    if (savedAlbums.length > 0) {
+      setAlbums(savedAlbums); // Use saved albums if available
+    } else {
+      getAlbums()
+        .then((albumsResponse) => {
+          setAlbums(albumsResponse || []);
+          saveAlbumsToLocalStorage(albumsResponse || []); // Save to LocalStorage
+        })
+        .catch((error) => console.error('Error fetching albums:', error));
+    }
   }, []);
 
-  // Appends photo to the appropriate album
-  const handleAddPhoto = (newPhoto: Photo) => {
-    addPhoto(newPhoto)
-      .then((createdPhoto) => {
-        setAlbums((prevAlbums) =>
-          prevAlbums.map((album) =>
-            album.id === createdPhoto.albumId
-              ? {
-                  ...album,
-                  photos: album.photos ? [...album.photos, createdPhoto] : [createdPhoto],
-                }
-              : album
-          )
-        );
-      })
-      .catch((error) => console.error('Error adding photo:', error));
-  };
+  // Appends photo to the appropriate album's photos in localStorage
+  const handleAddPhoto = (albumId: number, newPhoto: Photo) => {
+    setAlbums((prevAlbums) => {
+      const updatedAlbums = prevAlbums.map((album) => {
+        if (album.id === albumId) {
+          // Append the new photo to the album's photos array
+          const updatedPhotos = album.photos ? [...album.photos, newPhoto] : [newPhoto];
+          return { ...album, photos: updatedPhotos };
+        }
+        return album;
+      });
 
-  // Removes a photo from the album
-  const handleDeletePhoto = (photoId: number) => {
-    const updatedAlbums = albums.map((album) => {
-      album.photos = album.photos?.filter((photo) => photo.id !== photoId);
-      return album;
+      saveAlbumsToLocalStorage(updatedAlbums); // Save updated albums to localStorage
+      return updatedAlbums;
     });
-
-    setAlbums(updatedAlbums);
   };
 
-  // Creates a new album
+  // Removes a photo from the album and saves to localStorage
+  const handleDeletePhoto = (albumId: number, photoId: number) => {
+    setAlbums((prevAlbums) => {
+      const updatedAlbums = prevAlbums.map((album) => {
+        if (album.id === albumId) {
+          // Filter photos, and ensure updatedPhotos is not undefined
+          const updatedPhotos = album.photos ? album.photos.filter((photo) => photo.id !== photoId) : [];
+  
+          // Return a new album object with updated photos (could be an empty array)
+          return {
+            ...album,
+            photos: updatedPhotos.length > 0 ? updatedPhotos : [], // Ensure we return an empty array if no photos left
+          };
+        }
+        return album;
+      });
+  
+      saveAlbumsToLocalStorage(updatedAlbums);
+      return updatedAlbums; // Return updated state
+    });
+  };
+  
+  
+
+  // Creates a new album and saves it to LocalStorage
   const handleCreateAlbum = () => {
+    if (!currentUserId) {
+      alert('Please log in to create an album.');
+      return;
+    }
+
     if (newAlbumTitle.trim() !== '') {
       const newAlbum = {
+        id: Date.now(), // Temporarily use current timestamp as album ID
         userId: currentUserId,
         title: newAlbumTitle,
+        photos: [],
       };
 
+      setAlbums((prevAlbums) => {
+        const updatedAlbums = [...prevAlbums, newAlbum];
+        saveAlbumsToLocalStorage(updatedAlbums); // Save to LocalStorage
+        return updatedAlbums;
+      });
+
       createAlbum(newAlbum)
-        .then((createdAlbum) => {
-          setAlbums((prevAlbums) => [...prevAlbums, createdAlbum]);
-          setNewAlbumTitle('');
+        .then(() => {
+          setNewAlbumTitle(''); // Reset album title input
         })
         .catch((error) => console.error('Error creating album:', error));
     }
@@ -87,52 +126,37 @@ const FeedPage = () => {
         updatedExpandedAlbumIds.delete(albumId);
       } else {
         updatedExpandedAlbumIds.add(albumId);
-        loadPhotosForAlbum(albumId); // Fetch photos when expanding the album
       }
       return updatedExpandedAlbumIds;
     });
   };
 
-  // Fetches photos for a specific album
-  const loadPhotosForAlbum = (albumId: number) => {
-    getPhotos()
-      .then((photosResponse) => {
-        const albumPhotos = photosResponse.filter((photo: Photo) => photo.albumId === albumId);
-        setAlbums((prevAlbums) =>
-          prevAlbums.map((album) =>
-            album.id === albumId
-              ? { ...album, photos: albumPhotos }  // Make sure to update the photos array here
-              : album
-          )
-        );
-      })
-      .catch((error) => console.error('Error fetching photos:', error));
-  };
-
   return (
     <div>
       <h1>Albums</h1>
-      <div>
-        <input
-          type="text"
-          value={newAlbumTitle}
-          onChange={(e) => setNewAlbumTitle(e.target.value)}
-          placeholder="Enter album title"
-        />
-        <button onClick={handleCreateAlbum}>Create Album</button>
-      </div>
+      {currentUserId ? (
+        <div>
+          <input
+            type="text"
+            value={newAlbumTitle}
+            onChange={(e) => setNewAlbumTitle(e.target.value)}
+            placeholder="Enter album title"
+          />
+          <button onClick={handleCreateAlbum}>Create Album</button>
+        </div>
+      ) : (
+        <p style={{ color: 'red' }}>Please log in to create albums.</p>
+      )}
 
-      {/* Render albums */}
       {albums.map((album) => (
         <AlbumCard
           key={album.id}
           album={album}
-          onAddPhoto={handleAddPhoto}
-          onDeletePhoto={handleDeletePhoto}
+          onAddPhoto={(photo) => handleAddPhoto(album.id, photo)} // Add photo to album
+          onDeletePhoto={(photoId) => handleDeletePhoto(album.id, photoId)} // Delete photo from album
           currentUserId={currentUserId}
           onToggleExpand={() => handleToggleExpand(album.id)}
           isExpanded={expandedAlbumIds.has(album.id)}
-          loadPhotos={() => loadPhotosForAlbum(album.id)}
         />
       ))}
     </div>

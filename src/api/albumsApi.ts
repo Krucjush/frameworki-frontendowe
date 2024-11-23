@@ -43,10 +43,10 @@ export const deletePhoto = async (id: number) => {
     }
 };
 
-export const createAlbum = async (album: { userId: number; title: string }) => {
+export const createAlbum = async (album: { id: number; userId: number; title: string }) => {
     try {
         const response = await axios.post(`${API_URL}/albums`, album);
-        return response.data;
+        return { ...album, ...response.data };
     } catch (error) {
         console.error('Error creating album:', error);
         throw error;
