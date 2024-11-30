@@ -20,8 +20,10 @@ interface Album {
 
 const FeedPage = () => {
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [filteredAlbums, setFilteredAlbums] = useState<Album[]>([]);
   const [newAlbumTitle, setNewAlbumTitle] = useState('');
   const [expandedAlbumIds, setExpandedAlbumIds] = useState<Set<number>>(new Set());
+  const [selectedUserId, setSelectedUserId] = useState<number | 'all'>('all');
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   // Helper functions for LocalStorage
@@ -48,19 +50,30 @@ const FeedPage = () => {
     }
   }, []);
 
+  // Filter albums based on selected user
+  useEffect(() => {
+    if (selectedUserId === 'all') {
+      setFilteredAlbums(albums);
+    } else {
+      setFilteredAlbums(albums.filter((album) => album.userId === selectedUserId));
+    }
+  }, [albums, selectedUserId]);
+
+  // Get unique user IDs for the dropdown
+  const uniqueUserIds = Array.from(new Set(albums.map((album) => album.userId)));
+
   // Appends photo to the appropriate album's photos in localStorage
   const handleAddPhoto = (albumId: number, newPhoto: Photo) => {
     setAlbums((prevAlbums) => {
       const updatedAlbums = prevAlbums.map((album) => {
         if (album.id === albumId) {
-          // Append the new photo to the album's photos array
           const updatedPhotos = album.photos ? [...album.photos, newPhoto] : [newPhoto];
           return { ...album, photos: updatedPhotos };
         }
         return album;
       });
 
-      saveAlbumsToLocalStorage(updatedAlbums); // Save updated albums to localStorage
+      saveAlbumsToLocalStorage(updatedAlbums);
       return updatedAlbums;
     });
   };
@@ -70,24 +83,16 @@ const FeedPage = () => {
     setAlbums((prevAlbums) => {
       const updatedAlbums = prevAlbums.map((album) => {
         if (album.id === albumId) {
-          // Filter photos, and ensure updatedPhotos is not undefined
           const updatedPhotos = album.photos ? album.photos.filter((photo) => photo.id !== photoId) : [];
-  
-          // Return a new album object with updated photos (could be an empty array)
-          return {
-            ...album,
-            photos: updatedPhotos.length > 0 ? updatedPhotos : [], // Ensure we return an empty array if no photos left
-          };
+          return { ...album, photos: updatedPhotos };
         }
         return album;
       });
-  
+
       saveAlbumsToLocalStorage(updatedAlbums);
-      return updatedAlbums; // Return updated state
+      return updatedAlbums;
     });
   };
-  
-  
 
   // Creates a new album and saves it to LocalStorage
   const handleCreateAlbum = () => {
@@ -134,6 +139,24 @@ const FeedPage = () => {
   return (
     <div>
       <h1>Albums</h1>
+
+      {/* Dropdown for filtering */}
+      <div>
+        <label htmlFor="userFilter">Filter by User:</label>
+        <select
+          id="userFilter"
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+        >
+          <option value="all">All Users</option>
+          {uniqueUserIds.map((userId) => (
+            <option key={userId} value={userId}>
+              User {userId}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {currentUserId ? (
         <div>
           <input
@@ -148,7 +171,7 @@ const FeedPage = () => {
         <p style={{ color: 'red' }}>Please log in to create albums.</p>
       )}
 
-      {albums.map((album) => (
+      {filteredAlbums.map((album) => (
         <AlbumCard
           key={album.id}
           album={album}
