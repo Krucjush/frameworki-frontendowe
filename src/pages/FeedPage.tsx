@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getAlbums, createAlbum } from '../api/albumsApi';
 import AlbumCard from '../components/AlbumCard';
+import '../styles.css'
 
 interface Photo {
   id: number;
@@ -15,7 +16,7 @@ interface Album {
   id: number;
   title: string;
   userId: number;
-  photos?: Photo[]; // Photos are part of the album
+  photos?: Photo[];
 }
 
 const FeedPage = () => {
@@ -26,7 +27,6 @@ const FeedPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<number | 'all'>('all');
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
-  // Helper functions for LocalStorage
   const getAlbumsFromLocalStorage = (): Album[] => {
     return JSON.parse(localStorage.getItem('albums') || '[]');
   };
@@ -35,22 +35,20 @@ const FeedPage = () => {
     localStorage.setItem('albums', JSON.stringify(albums));
   };
 
-  // Fetch albums initially and sync with localStorage
   useEffect(() => {
     const savedAlbums = getAlbumsFromLocalStorage();
     if (savedAlbums.length > 0) {
-      setAlbums(savedAlbums); // Use saved albums if available
+      setAlbums(savedAlbums);
     } else {
       getAlbums()
         .then((albumsResponse) => {
           setAlbums(albumsResponse || []);
-          saveAlbumsToLocalStorage(albumsResponse || []); // Save to LocalStorage
+          saveAlbumsToLocalStorage(albumsResponse || []);
         })
         .catch((error) => console.error('Error fetching albums:', error));
     }
   }, []);
 
-  // Filter albums based on selected user
   useEffect(() => {
     if (selectedUserId === 'all') {
       setFilteredAlbums(albums);
@@ -59,10 +57,8 @@ const FeedPage = () => {
     }
   }, [albums, selectedUserId]);
 
-  // Get unique user IDs for the dropdown
   const uniqueUserIds = Array.from(new Set(albums.map((album) => album.userId)));
 
-  // Appends photo to the appropriate album's photos in localStorage
   const handleAddPhoto = (albumId: number, newPhoto: Photo) => {
     setAlbums((prevAlbums) => {
       const updatedAlbums = prevAlbums.map((album) => {
@@ -78,7 +74,6 @@ const FeedPage = () => {
     });
   };
 
-  // Removes a photo from the album and saves to localStorage
   const handleDeletePhoto = (albumId: number, photoId: number) => {
     setAlbums((prevAlbums) => {
       const updatedAlbums = prevAlbums.map((album) => {
@@ -94,7 +89,6 @@ const FeedPage = () => {
     });
   };
 
-  // Creates a new album and saves it to LocalStorage
   const handleCreateAlbum = () => {
     if (!currentUserId) {
       alert('Please log in to create an album.');
@@ -103,7 +97,7 @@ const FeedPage = () => {
 
     if (newAlbumTitle.trim() !== '') {
       const newAlbum = {
-        id: Date.now(), // Temporarily use current timestamp as album ID
+        id: Date.now(),
         userId: currentUserId,
         title: newAlbumTitle,
         photos: [],
@@ -111,19 +105,18 @@ const FeedPage = () => {
 
       setAlbums((prevAlbums) => {
         const updatedAlbums = [...prevAlbums, newAlbum];
-        saveAlbumsToLocalStorage(updatedAlbums); // Save to LocalStorage
+        saveAlbumsToLocalStorage(updatedAlbums);
         return updatedAlbums;
       });
 
       createAlbum(newAlbum)
         .then(() => {
-          setNewAlbumTitle(''); // Reset album title input
+          setNewAlbumTitle('');
         })
         .catch((error) => console.error('Error creating album:', error));
     }
   };
 
-  // Expands or collapses album view
   const handleToggleExpand = (albumId: number) => {
     setExpandedAlbumIds((prevExpandedAlbumIds) => {
       const updatedExpandedAlbumIds = new Set(prevExpandedAlbumIds);
@@ -137,10 +130,9 @@ const FeedPage = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>Albums</h1>
-
-      {/* Dropdown for filtering */}
+  
       <div>
         <label htmlFor="userFilter">Filter by User:</label>
         <select
@@ -156,9 +148,9 @@ const FeedPage = () => {
           ))}
         </select>
       </div>
-
+  
       {currentUserId ? (
-        <div>
+        <div style={{ margin: '20px 0' }}>
           <input
             type="text"
             value={newAlbumTitle}
@@ -170,13 +162,13 @@ const FeedPage = () => {
       ) : (
         <p style={{ color: 'red' }}>Please log in to create albums.</p>
       )}
-
+  
       {filteredAlbums.map((album) => (
         <AlbumCard
           key={album.id}
           album={album}
-          onAddPhoto={(photo) => handleAddPhoto(album.id, photo)} // Add photo to album
-          onDeletePhoto={(photoId) => handleDeletePhoto(album.id, photoId)} // Delete photo from album
+          onAddPhoto={(photo) => handleAddPhoto(album.id, photo)}
+          onDeletePhoto={(photoId) => handleDeletePhoto(album.id, photoId)}
           currentUserId={currentUserId}
           onToggleExpand={() => handleToggleExpand(album.id)}
           isExpanded={expandedAlbumIds.has(album.id)}

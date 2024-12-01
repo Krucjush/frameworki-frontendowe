@@ -11,7 +11,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Navbar />
-      <main style={{ paddingTop: '70px' }}> {/* Increased padding for navbar space */}
+      <main style={{ paddingTop: '70px' }}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<FeedPage />} />

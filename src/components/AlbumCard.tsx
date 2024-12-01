@@ -18,22 +18,22 @@ const AlbumCard = ({
 }) => {
   const [photos, setPhotos] = useState<any[]>(album.photos || []);
 
-  // Effect to load photos when expanded or when album.photos changes
   useEffect(() => {
     setPhotos(album.photos || []);
-  }, [album.photos]); // Add album.photos as a dependency
+  }, [album.photos]);
 
   return (
-    <div style={{ border: '1px solid #ccc', marginBottom: '20px', padding: '10px' }}>
-      <h3 onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
-        {album.title} {isExpanded ? '▲' : '▼'}
-      </h3>
+    <div className="album-card">
+      <div className="album-header" onClick={onToggleExpand}>
+        <span className="album-title">{album.title}</span>
+        <span>{isExpanded ? '▲' : '▼'}</span>
+      </div>
       {isExpanded && (
         <div>
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <div className="album-photos">
             {photos.length > 0 ? (
               photos.map((photo: any) => (
-                <div key={photo.id} style={{ margin: '10px' }}>
+                <div key={photo.id} className="photo-card">
                   <img src={photo.thumbnailUrl} alt={photo.title} />
                   <p>{photo.title}</p>
                   {photo.userId === currentUserId && (
@@ -49,7 +49,7 @@ const AlbumCard = ({
             <AddPhoto
               albumId={album.id}
               currentUserId={currentUserId}
-              onPhotoAdded={onAddPhoto} // Ensure this function is passed down correctly
+              onPhotoAdded={onAddPhoto}
             />
           )}
         </div>

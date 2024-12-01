@@ -54,7 +54,7 @@ const AddPhoto = ({
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <div className="add-photo-form">
       <h2>Add Photo</h2>
       {currentUserId ? (
         <>
