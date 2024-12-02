@@ -10,6 +10,10 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const handleUserPageRedirect = () => {
+    navigate('/user');
+  };
+
   return (
     <header className="navbar">
       <div className="navbar-left">
@@ -18,7 +22,7 @@ const Navbar = () => {
       <div className="navbar-right">
         {isLoggedIn ? (
           <>
-            <span className="navbar-welcome">Welcome, {user.username}</span>
+            <button onClick={handleUserPageRedirect} className="navbar-welcome-button">Welcome, {user.username}</button>
             <button onClick={handleLogout} className="navbar-logout">Logout</button>
           </>
         ) : (
