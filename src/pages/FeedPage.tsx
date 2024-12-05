@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAlbums, createAlbum } from '../api/albumsApi';
+import { getAlbums, createAlbum, getPhotos } from '../api/albumsApi';
 import AlbumCard from '../components/AlbumCard';
 import '../styles.css'
 
@@ -36,17 +36,29 @@ const FeedPage = () => {
   };
 
   useEffect(() => {
-    const savedAlbums = getAlbumsFromLocalStorage();
-    if (savedAlbums.length > 0) {
-      setAlbums(savedAlbums);
-    } else {
-      getAlbums()
-        .then((albumsResponse) => {
-          setAlbums(albumsResponse || []);
-          saveAlbumsToLocalStorage(albumsResponse || []);
-        })
-        .catch((error) => console.error('Error fetching albums:', error));
-    }
+    const fetchAlbumsAndPhotos = async () => {
+      try {
+        const savedAlbums = getAlbumsFromLocalStorage();
+        if (savedAlbums.length > 0) {
+          setAlbums(savedAlbums);
+        } else {
+          const albumsResponse = await getAlbums();
+          const photosResponse = await getPhotos();
+  
+          const albumsWithPhotos = albumsResponse.map((album: Album) => ({
+            ...album,
+            photos: photosResponse.filter((photo: Photo) => photo.albumId === album.id),
+          }));
+  
+          setAlbums(albumsWithPhotos);
+          saveAlbumsToLocalStorage(albumsWithPhotos);
+        }
+      } catch (error) {
+        console.error('Error fetching albums and photos:', error);
+      }
+    };
+  
+    fetchAlbumsAndPhotos();
   }, []);
 
   useEffect(() => {

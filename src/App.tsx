@@ -6,6 +6,7 @@ import PostPage from './pages/PostPage';
 import SearchPage from './pages/SearchPage';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import SearchedUserPage from './pages/SearchedUserPage';
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<FeedPage />} />
           <Route path="/user" element={<UserPage />} />
+          <Route path="/user/:userId" element={<SearchedUserPage />} />
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/search" element={<SearchPage />} />
         </Routes>

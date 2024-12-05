@@ -12,7 +12,23 @@ export const getUsers = async () => {
   }
 };
 export const getUserById = async (id: number) => axios.get(`${API_URL}/users/${id}`);
-export const searchUsers = async (name: string) => axios.get(`${API_URL}/users?name_like=${name}`);
+export const searchUsers = async (query: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/users`);
+    const users = response.data;
+
+    const filteredUsers = users.filter(
+      (user: any) =>
+        user.name.toLowerCase().includes(query.toLowerCase()) ||
+        user.username.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return { data: filteredUsers };
+  } catch (error) {
+    console.error('Error searching for users:', error);
+    throw error;
+  }
+};
 export const updateUserById = async (id: number, userData: any) =>
     axios.put(`${API_URL}/users/${id}`, userData, {
       headers: { 'Content-type': 'application/json; charset=UTF-8' },
