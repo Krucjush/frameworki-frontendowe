@@ -7,6 +7,7 @@ import SearchPage from './pages/SearchPage';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import SearchedUserPage from './pages/SearchedUserPage';
+import PhotoDetailsPage from './pages/PhotoDetailsPage';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/user/:userId" element={<SearchedUserPage />} />
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/photo/:photoId" element={<PhotoDetailsPage />} />
         </Routes>
       </main>
     </AuthProvider>
