@@ -36,7 +36,7 @@ const AlbumCard = ({
                 <div key={photo.id} className="photo-card">
                   <img src={photo.thumbnailUrl} alt={photo.title} />
                   <p>{photo.title}</p>
-                  {photo.userId === currentUserId && (
+                  {currentUserId && photo.userId === currentUserId && (
                     <button onClick={() => onDeletePhoto(photo.id)}>Delete</button>
                   )}
                 </div>
