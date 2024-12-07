@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import SearchedUserPage from './pages/SearchedUserPage';
 import PhotoDetailsPage from './pages/PhotoDetailsPage';
+import AlbumPage from './pages/AlbumPage';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/post/:id" element={<PostPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/photo/:photoId" element={<PhotoDetailsPage />} />
+          <Route path="/album/:albumId" element={<AlbumPage />} />
         </Routes>
       </main>
     </AuthProvider>

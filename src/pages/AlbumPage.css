@@ -1,0 +1,32 @@
+.album-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: start;
+    padding: 20px;
+  }
+  
+  .photo-card {
+    flex: 0 1 calc(20% - 15px);
+    max-width: 200px;
+    margin: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .photo-card img {
+    width: 100%;
+    height: auto;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .photo-card p {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #333;
+  }
+  

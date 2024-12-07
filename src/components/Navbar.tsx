@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { searchUsers } from '../api/usersApi';
-import { getPhotoById } from '../api/photosApi'; // Import the function to fetch photos
 
 const Navbar = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -10,6 +9,7 @@ const Navbar = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [photoSearchQuery, setPhotoSearchQuery] = useState('');
+  const [albumSearchQuery, setAlbumSearchQuery] = useState('');
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -27,9 +27,7 @@ const Navbar = () => {
     }
 
     try {
-      console.log('Searching for:', searchQuery);
       const response = await searchUsers(searchQuery);
-      console.log('Search response:', response);
       if (response.data.length === 0) {
         alert('No user found.');
       } else {
@@ -54,15 +52,30 @@ const Navbar = () => {
         return;
       }
 
-      const response = await getPhotoById(photoId);
-      if (!response.data) {
-        alert('No photo found with this ID.');
-      } else {
-        navigate(`/photo/${photoId}`);
-      }
+      navigate(`/photo/${photoId}`);
     } catch (error) {
       console.error('Error searching for photo:', error);
       alert('Failed to search for photo.');
+    }
+  };
+
+  const handleSearchAlbum = async () => {
+    if (!albumSearchQuery.trim()) {
+      alert('Please enter an album ID to search.');
+      return;
+    }
+
+    try {
+      const albumId = parseInt(albumSearchQuery, 10);
+      if (isNaN(albumId)) {
+        alert('Invalid album ID. Please enter a number.');
+        return;
+      }
+
+      navigate(`/album/${albumId}`);
+    } catch (error) {
+      console.error('Error searching for album:', error);
+      alert('Failed to search for album.');
     }
   };
 
@@ -79,7 +92,7 @@ const Navbar = () => {
             placeholder="Search users..."
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button onClick={handleSearchUser}>Search</button>
+          <button onClick={handleSearchUser}>Search User</button>
         </div>
         <div className="navbar-search">
           <input
@@ -89,6 +102,15 @@ const Navbar = () => {
             onChange={(e) => setPhotoSearchQuery(e.target.value)}
           />
           <button onClick={handleSearchPhoto}>Search Photo</button>
+        </div>
+        <div className="navbar-search">
+          <input
+            type="text"
+            value={albumSearchQuery}
+            placeholder="Search album by ID..."
+            onChange={(e) => setAlbumSearchQuery(e.target.value)}
+          />
+          <button onClick={handleSearchAlbum}>Search Album</button>
         </div>
         {isLoggedIn ? (
           <>
