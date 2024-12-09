@@ -190,3 +190,34 @@ body {
   .save-button:hover {
     background-color: #0056b3;
   }
+
+  .post-card {
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .post-card h3 {
+    margin: 0;
+    color: #333;
+  }
+  
+  .post-card p {
+    color: #555;
+  }
+  
+  .post-card small {
+    color: #888;
+  }
+
+  .navbar-posts {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    padding-left: 1vw;
+  }
+  
+  .navbar-posts:hover {
+    text-decoration: underline;
+  }

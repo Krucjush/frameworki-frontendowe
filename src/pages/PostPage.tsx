@@ -1,84 +1,47 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getPostById, getCommentsByPostId, addComment, deleteCommentById } from '../api/postsApi';
-import CommentCard from '../components/CommentCard';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { getPosts } from '../api/postsApi';
+import PostCard from '../components/PostCard';
 
-const PostPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<any>(null);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const { user } = useAuth();
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+  userId: number;
+}
+
+const PostsPage: React.FC = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    if (id) {
-      getPostById(Number(id))
-        .then((response) => setPost(response.data))
-        .catch((error) => console.error('Error fetching post:', error));
-
-      getCommentsByPostId(Number(id))
-        .then((response) => setComments(response.data))
-        .catch((error) => console.error('Error fetching comments:', error));
-    }
-  }, [id]);
-
-  const handleAddComment = () => {
-    if (newComment.trim() === '') return;
-
-    const comment = {
-      postId: post.id,
-      name: 'My Comment',
-      email: user.email,
-      body: newComment,
+    const fetchPosts = async () => {
+      try {
+        const response = await getPosts();
+        setPosts(response.data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
-    addComment(comment)
-      .then((response) => {
-        setComments((prev) => [response.data, ...prev]);
-        setNewComment('');
-      })
-      .catch((error) => console.error('Error adding comment:', error));
-  };
-
-  const handleDeleteComment = (commentId: number) => {
-    deleteCommentById(commentId)
-      .then(() => {
-        setComments((prev) => prev.filter((comment) => comment.id !== commentId));
-      })
-      .catch((error) => console.error('Error deleting comment:', error));
-  };
+    fetchPosts();
+  }, []);
 
   return (
-    <div>
-      {post && (
-        <>
-          <h1>{post.title}</h1>
-          <p>{post.body}</p>
-          <h3>Comments</h3>
-          <div>
-            <input
-              type="text"
-              placeholder="Write a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-            />
-            <button onClick={handleAddComment}>Add Comment</button>
-          </div>
-          <div>
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                onDelete={handleDeleteComment}
-                isOwner={comment.email === user.email}
-              />
-            ))}
-          </div>
-        </>
+    <div className="posts-page" style={{ padding: '16px' }}>
+      <h1>Posts</h1>
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <PostCard
+            key={post.id}
+            title={post.title}
+            body={post.body}
+            userId={post.userId}
+          />
+        ))
+      ) : (
+        <p>Loading posts...</p>
       )}
     </div>
   );
 };
 
-export default PostPage;
+export default PostsPage;

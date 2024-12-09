@@ -83,6 +83,7 @@ const Navbar = () => {
     <header className="navbar">
       <div className="navbar-left">
         <Link to="/" className="navbar-home">Home</Link>
+        <Link to="/posts" className="navbar-posts">Posts</Link>
       </div>
       <div className="navbar-right">
         <div className="navbar-search">
