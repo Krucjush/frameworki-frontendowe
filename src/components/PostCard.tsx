@@ -1,33 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { getUserById } from '../api/usersApi';
+import React from 'react';
+import { deletePost } from '../api/postsApi';
 
 interface PostCardProps {
+  id: number;
   title: string;
   body: string;
   userId: number;
+  currentUserId: number;
+  onDelete: (id: number) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ title, body, userId }) => {
-  const [username, setUsername] = useState('');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await getUserById(userId);
-        setUsername(response.data.username);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-
-    fetchUser();
-  }, [userId]);
+const PostCard: React.FC<PostCardProps> = ({ id, title, body, userId, currentUserId, onDelete }) => {
+  const handleDelete = async () => {
+    try {
+      await deletePost(id);
+      onDelete(id);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
 
   return (
-    <div className="post-card" style={{ border: '1px solid #ccc', padding: '16px', marginBottom: '16px' }}>
+    <div className="post-card">
       <h3>{title}</h3>
       <p>{body}</p>
-      <small>By: {username}</small>
+      <small>Posted by User {userId}</small>
+      {userId === currentUserId && (
+        <button className="delete-button" onClick={handleDelete}>
+          Delete
+        </button>
+      )}
     </div>
   );
 };

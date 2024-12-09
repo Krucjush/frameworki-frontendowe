@@ -192,22 +192,31 @@ body {
   }
 
   .post-card {
+    border: 1px solid #ddd;
     border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    position: relative;
   }
   
   .post-card h3 {
-    margin: 0;
+    margin: 0 0 8px;
     color: #333;
+    font-size: 1.2rem;
   }
   
   .post-card p {
+    margin: 0 0 8px;
     color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
   
   .post-card small {
     color: #888;
+    font-size: 0.8rem;
   }
 
   .navbar-posts {
@@ -220,4 +229,24 @@ body {
   
   .navbar-posts:hover {
     text-decoration: underline;
+  }
+
+  .delete-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: transparent;
+    border: none;
+    color: #d9534f;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .delete-button:hover {
+    color: #c9302c;
+  }
+
+  .delete-button:focus {
+    outline: none;
   }

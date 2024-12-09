@@ -11,6 +11,7 @@ interface Post {
 
 const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -25,6 +26,10 @@ const PostsPage: React.FC = () => {
     fetchPosts();
   }, []);
 
+  const handleDeletePost = (id: number) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+  };
+
   return (
     <div className="posts-page" style={{ padding: '16px' }}>
       <h1>Posts</h1>
@@ -32,9 +37,12 @@ const PostsPage: React.FC = () => {
         posts.map((post) => (
           <PostCard
             key={post.id}
+            id={post.id}
             title={post.title}
             body={post.body}
             userId={post.userId}
+            currentUserId={currentUserId}
+            onDelete={handleDeletePost}
           />
         ))
       ) : (
