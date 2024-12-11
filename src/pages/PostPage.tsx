@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getPosts } from '../api/postsApi';
 import PostCard from '../components/PostCard';
+import PostForm from '../components/PostForm';
 
 interface Post {
   id: number;
@@ -14,25 +14,41 @@ const PostsPage: React.FC = () => {
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await getPosts();
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
+    const initializePosts = async () => {
+      const localPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+      if (localPosts.length > 0) {
+        setPosts(localPosts);
+      } else {
+        try {
+          const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+          const fetchedPosts = await response.json();
+          localStorage.setItem('posts', JSON.stringify(fetchedPosts));
+          setPosts(fetchedPosts);
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+        }
       }
     };
 
-    fetchPosts();
+    initializePosts();
   }, []);
 
+  const handleAddPost = (newPost: Post) => {
+    const updatedPosts = [newPost, ...posts];
+    setPosts(updatedPosts);
+    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+  };
+
   const handleDeletePost = (id: number) => {
-    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+    const updatedPosts = posts.filter((post) => post.id !== id);
+    setPosts(updatedPosts);
+    localStorage.setItem('posts', JSON.stringify(updatedPosts));
   };
 
   return (
     <div className="posts-page" style={{ padding: '16px' }}>
       <h1>Posts</h1>
+      <PostForm currentUserId={currentUserId} onAddPost={handleAddPost} />
       {posts.length > 0 ? (
         posts.map((post) => (
           <PostCard

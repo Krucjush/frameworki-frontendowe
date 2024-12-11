@@ -250,3 +250,41 @@ body {
   .delete-button:focus {
     outline: none;
   }
+
+  .add-photo-form {
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-photo-form h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .add-photo-form input, 
+  .add-photo-form textarea {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+  }
+  
+  .add-photo-form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .add-photo-form button:hover {
+    background-color: #0056b3;
+  }
