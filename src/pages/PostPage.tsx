@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PostCard from '../components/PostCard';
-import PostForm from '../components/PostForm';
+import CommentList from '../components/CommentList';
+import CommentForm from '../components/CommentForm';
 
 interface Post {
   id: number;
@@ -9,34 +10,49 @@ interface Post {
   userId: number;
 }
 
+interface Comment {
+  postId: number;
+  id: number;
+  name: string;
+  email: string;
+  body: string;
+}
+
 const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
 
   useEffect(() => {
-    const initializePosts = async () => {
+    const initializeData = async () => {
       const localPosts = JSON.parse(localStorage.getItem('posts') || '[]');
       if (localPosts.length > 0) {
         setPosts(localPosts);
       } else {
-        try {
-          const response = await fetch('https://jsonplaceholder.typicode.com/posts');
-          const fetchedPosts = await response.json();
-          localStorage.setItem('posts', JSON.stringify(fetchedPosts));
-          setPosts(fetchedPosts);
-        } catch (error) {
-          console.error('Error fetching posts:', error);
-        }
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+        const fetchedPosts = await response.json();
+        localStorage.setItem('posts', JSON.stringify(fetchedPosts));
+        setPosts(fetchedPosts);
+      }
+
+      const localComments = JSON.parse(localStorage.getItem('comments') || '[]');
+      if (localComments.length > 0) {
+        setComments(localComments);
+      } else {
+        const response = await fetch('https://jsonplaceholder.typicode.com/comments');
+        const fetchedComments = await response.json();
+        localStorage.setItem('comments', JSON.stringify(fetchedComments));
+        setComments(fetchedComments);
       }
     };
 
-    initializePosts();
+    initializeData();
   }, []);
 
-  const handleAddPost = (newPost: Post) => {
-    const updatedPosts = [newPost, ...posts];
-    setPosts(updatedPosts);
-    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+  const handleAddComment = (newComment: Comment) => {
+    const updatedComments = [newComment, ...comments];
+    setComments(updatedComments);
+    localStorage.setItem('comments', JSON.stringify(updatedComments));
   };
 
   const handleDeletePost = (id: number) => {
@@ -48,9 +64,8 @@ const PostsPage: React.FC = () => {
   return (
     <div className="posts-page" style={{ padding: '16px' }}>
       <h1>Posts</h1>
-      <PostForm currentUserId={currentUserId} onAddPost={handleAddPost} />
-      {posts.length > 0 ? (
-        posts.map((post) => (
+      {posts.map((post) => (
+        <div key={post.id} style={{ marginBottom: '24px' }}>
           <PostCard
             key={post.id}
             id={post.id}
@@ -60,10 +75,13 @@ const PostsPage: React.FC = () => {
             currentUserId={currentUserId}
             onDelete={handleDeletePost}
           />
-        ))
-      ) : (
-        <p>Loading posts...</p>
-      )}
+          <CommentList
+            postId={post.id}
+            comments={comments.filter((comment) => comment.postId === post.id)}
+          />
+          <CommentForm postId={post.id} onAddComment={handleAddComment} />
+        </div>
+      ))}
     </div>
   );
 };
