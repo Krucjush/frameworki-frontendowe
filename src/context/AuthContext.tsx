@@ -1,8 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { getUsers } from '../api/usersApi';
 
 type AuthContextType = {
   user: any;
-  login: (user: any) => void;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 };
 
@@ -13,14 +14,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  
-  const login = (userData: any) => {
-    if (!userData.id) {
-      userData.id = new Date().getTime();
+
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const users = await getUsers();
+      const matchedUser = users.find(
+        (user: any) => user.username === username && password === 'test1'
+      );
+
+      if (matchedUser) {
+        setUser(matchedUser);
+        localStorage.setItem('user', JSON.stringify(matchedUser));
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error during login:', error);
+      return false;
     }
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  }
+  };
 
   const logout = () => {
     setUser(null);

@@ -6,15 +6,21 @@ import './LoginPage.css';
 const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username && password) {
-      login({ username, id: new Date().getTime() });
-      navigate('/');
+      const isSuccess = await login(username, password);
+
+      if (isSuccess) {
+        navigate('/');
+      } else {
+        setError('Invalid username or password');
+      }
     } else {
-      alert('Please enter username and password');
+      setError('Please enter both username and password');
     }
   };
 
@@ -22,6 +28,7 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="login-box">
         <h1 className="login-title">Login</h1>
+        {error && <p className="login-error">{error}</p>}
         <input
           type="text"
           placeholder="Username"

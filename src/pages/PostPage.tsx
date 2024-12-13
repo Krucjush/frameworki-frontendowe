@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PostCard from '../components/PostCard';
 import CommentList from '../components/CommentList';
 import CommentForm from '../components/CommentForm';
+import PostForm from '../components/PostForm';
 
 interface Post {
   id: number;
@@ -21,7 +22,7 @@ interface Comment {
 const PostsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  const currentUserId = JSON.parse(localStorage.getItem('user') || '{}').id;
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     const initializeData = async () => {
@@ -55,6 +56,18 @@ const PostsPage: React.FC = () => {
     localStorage.setItem('comments', JSON.stringify(updatedComments));
   };
 
+  const handleDeleteComment = (commentId: number) => {
+    const updatedComments = comments.filter((comment) => comment.id !== commentId);
+    setComments(updatedComments);
+    localStorage.setItem('comments', JSON.stringify(updatedComments));
+  };
+
+  const handleAddPost = (newPost: Post) => {
+    const updatedPosts = [newPost, ...posts];
+    setPosts(updatedPosts);
+    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+  };
+
   const handleDeletePost = (id: number) => {
     const updatedPosts = posts.filter((post) => post.id !== id);
     setPosts(updatedPosts);
@@ -64,20 +77,22 @@ const PostsPage: React.FC = () => {
   return (
     <div className="posts-page" style={{ padding: '16px' }}>
       <h1>Posts</h1>
+      <PostForm currentUserId={currentUser.id} onAddPost={handleAddPost} />
       {posts.map((post) => (
         <div key={post.id} style={{ marginBottom: '24px' }}>
           <PostCard
-            key={post.id}
             id={post.id}
             title={post.title}
             body={post.body}
             userId={post.userId}
-            currentUserId={currentUserId}
+            currentUserId={currentUser.id}
             onDelete={handleDeletePost}
           />
           <CommentList
             postId={post.id}
             comments={comments.filter((comment) => comment.postId === post.id)}
+            currentUserEmail={currentUser.email}
+            onDeleteComment={handleDeleteComment}
           />
           <CommentForm postId={post.id} onAddComment={handleAddComment} />
         </div>

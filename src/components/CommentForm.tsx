@@ -7,14 +7,21 @@ interface CommentFormProps {
 
 const CommentForm: React.FC<CommentFormProps> = ({ postId, onAddComment }) => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
+
+  const currentUser = localStorage.getItem('user');
+  const email = currentUser ? JSON.parse(currentUser).email : '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !body.trim()) {
+    if (!name.trim() || !body.trim()) {
       alert('Please fill out all fields.');
+      return;
+    }
+
+    if (!email) {
+      alert('User is not logged in.');
       return;
     }
 
@@ -28,20 +35,12 @@ const CommentForm: React.FC<CommentFormProps> = ({ postId, onAddComment }) => {
 
     onAddComment(newComment);
     setName('');
-    setEmail('');
     setBody('');
   };
 
   return (
     <form onSubmit={handleSubmit} style={{ marginTop: '12px' }}>
       <h5>Add a Comment</h5>
-      <input
-        type="email"
-        placeholder="Your Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ marginBottom: '8px', width: '100%', padding: '8px' }}
-      />
       <input
         type="text"
         placeholder="Comment Title"
@@ -56,7 +55,16 @@ const CommentForm: React.FC<CommentFormProps> = ({ postId, onAddComment }) => {
         rows={4}
         style={{ marginBottom: '8px', width: '100%', padding: '8px' }}
       />
-      <button type="submit" style={{ padding: '8px 12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
+      <button
+        type="submit"
+        style={{
+          padding: '8px 12px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+        }}
+      >
         Add Comment
       </button>
     </form>
